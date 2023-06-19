@@ -106,27 +106,49 @@ export const removeProduct = async (req, res) => {
 export const updateUser = async (req, res) => {
   try {
     let _id = req.params.id;
-    const imageUrl = await cloudinary.uploader.upload(req.file.path, {
-      folder: "Oldie",
-    });
-    User.updateMany({}, { $unset: { email: 1 } });
-    User.findOneAndUpdate(
-      { _id: _id },
-      {
-        hoten: req.body.hoten,
-        hinhanh: imageUrl,
-        SDT: req.body.SDT,
-        diachi: req.body.diachi,
-        gioitinh: req.body.gioitinh,
-      },
-      { new: true }
-    ).then((updatedUser) => {
-      if (updatedUser) {
-        res.status(200).send(updatedUser);
-      } else {
-        res.status(400).send("invalid user");
-      }
-    });
+    if (req.files.length > 0) {
+      const imageUrl = await cloudinary.uploader.upload(req.files[0].path, {
+        folder: "Oldie",
+      });
+      User.findOneAndUpdate(
+        { _id: _id },
+        {
+          $set: {
+            hoten: req.body.hoten,
+            hinhanh: imageUrl.secure_url,
+            SDT: req.body.SDT,
+            diachi: req.body.diachi,
+            email: req.body.email,
+            gioitinh: req.body.gioitinh,
+          },
+        }
+      ).then((updatedUser) => {
+        if (updatedUser) {
+          res.status(200).json({ message: "Updated Successfully" });
+        } else {
+          res.status(400).json({ message: "Invalid User" });
+        }
+      });
+    } else {
+      User.findOneAndUpdate(
+        { _id: _id },
+        {
+          $set: {
+            hoten: req.body.hoten,
+            SDT: req.body.SDT,
+            diachi: req.body.diachi,
+            email: req.body.email,
+            gioitinh: req.body.gioitinh,
+          },
+        }
+      ).then((updatedUser) => {
+        if (updatedUser) {
+          res.status(200).json({ message: "Updated Successfully" });
+        } else {
+          res.status(400).json({ message: "Invalid User" });
+        }
+      });
+    }
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
@@ -150,9 +172,10 @@ export const getUser = async (req, res) => {
   try {
     let _id = req.params.id;
     let _userInf = await User.findOne({ _id });
+    let _userProduct = await Product.find({ _idUser: _id });
     _userInf.username = undefined;
     _userInf.password = undefined;
-    res.status(200).json(_userInf);
+    res.status(200).json({ _userInf, _userProduct });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }

@@ -58,34 +58,27 @@ export const addCart = async (req, res) => {
 
     if (cart) {
       let cartItems = cart.cartItem;
-      const itemLength = cartItems.length;
       let existed = false;
-      /* for (let i = 0; i < cartItems; i++) {
-        if (cart.cartItem[i]._idSp === _idP) {
-          existed = true;
-          const updateString = "cart.cartItem[" + i.toString() + "].amount";
-          const savedCart = await Cart.update(
-            { _idUser },
-            { $set: { updateString: cart.cartItem[i].amount + 1 } }
-          );
-          res.status(200).json(savedCart);
-        }
-      }
-      if (!existed) {
-        cart.cartItem.push({ _idSp: _idP, amount: 1 });
-        const savedCart = await cart.save();
-        res.status(200).json(savedCart);
-      } */
       cartItems.forEach((item) => {
         if (item._idSp === _idP) {
           item.amount++;
+          existed = true;
         }
       });
-      const updatedCart = await Cart.findOneAndUpdate(
-        { _idUser },
-        { $set: { cartItem: cartItems } }
-      );
-      res.status(200).json(updatedCart);
+      if (existed) {
+        const updatedCart = await Cart.findOneAndUpdate(
+          { _idUser },
+          { $set: { cartItem: cartItems } }
+        );
+        res.status(200).json(updatedCart);
+      } else {
+        cartItems.push({ _idSp: _idP, amount: 1 });
+        const updatedCart = await Cart.findOneAndUpdate(
+          { _idUser },
+          { $set: { cartItem: cartItems } }
+        );
+        res.status(200).json(updatedCart);
+      }
     } else {
       const newCart = new Cart({
         _idUser: _idUser,
