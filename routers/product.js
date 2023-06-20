@@ -21,6 +21,6 @@ router.get("/:idP", infProduct);
 router.patch("/cart/:id/:idP", verifyToken, addCart);
 
 /** POST Order id: idUser, idS: idSeller, idP: id Product */
-router.post("/order/:id/:idS/:idP", verifyToken, postOrder);
+router.post("/order", verifyToken, postOrder);
 
 export default router;

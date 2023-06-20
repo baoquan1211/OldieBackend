@@ -94,32 +94,24 @@ export const addCart = async (req, res) => {
 
 export const postOrder = async (req, res) => {
   try {
-    let _idUser = req.params.id;
-    let _idSeller = req.params.idS;
-    let _idP = req.params.idP;
-    const product = Product.findOne({ _id: _idP });
-
-    Product.findOneAndUpdate(
-      { _id: _idP },
-      { $set: { SoLuong: product.SoLuong - req.body.SoLuong } }
-    );
-    Cart.findOneAndUpdate(
-      { _idUser: _idUser },
-      { $pull: { _idSp: _idP } },
-      { new: true }
-    );
-
+    const nItem = req.body.cartItem.length;
+    let orderItem = [];
+    for (let i = 0; i < nItem; i += 2) {
+      orderItem.push({
+        _idSp: req.body.cartItem[i],
+        amount: req.body.cartItem[i + 1],
+      });
+    }
     const newOrder = new Order({
-      _idUser: _idUser,
-      _idNguoiBan: _idSeller,
-      _idSP: _idP,
-      SoLuong: req.body.SoLuong,
-      DiacChiGiaoHang: req.body.DiacChiGiaoHang,
+      _idUser: req.body._idUser,
+      orderItem: orderItem,
+      DiaChiGiaoHang: req.body.DiaChiGiaoHang,
       ChiPhiVanChuyen: req.body.ChiPhiVanChuyen,
       TongTien: req.body.TongTien,
     });
-    const saveOrder = newOrder.save();
-    res.status(201).json(saveOrder);
+    const saveOrder = await newOrder.save();
+    await Cart.findOneAndDelete({ _idUser: req.body._idUser });
+    res.status(200).json({ message: "Order Successfully" });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
