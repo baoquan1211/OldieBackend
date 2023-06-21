@@ -8,6 +8,7 @@ import {
   updateUser,
   getOrder,
   getUser,
+  removeProductCart,
 } from "../controllers/user.js";
 
 import { verifyToken } from "../middleware/auth.js";
@@ -31,5 +32,7 @@ router.get("/getUser/:id", getUser);
 router.patch("/update/:id", verifyToken, updateUser);
 
 router.patch("/:id/:idP", verifyToken, removeProduct);
+
+router.patch("/removeProductCart/:id/:product", verifyToken, removeProductCart);
 
 export default router;

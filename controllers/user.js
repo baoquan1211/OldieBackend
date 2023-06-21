@@ -159,7 +159,7 @@ export const updateUser = async (req, res) => {
 export const getOrder = async (req, res) => {
   try {
     let _idUser = req.params.id;
-    const orders = await Order.find({ _idUser });
+    const orders = await Order.find({ _idUser: _idUser });
     res.status(200).json(orders);
   } catch (e) {
     res.status(500).json({ error: e.message });
@@ -176,6 +176,29 @@ export const getUser = async (req, res) => {
     _userInf.username = undefined;
     _userInf.password = undefined;
     res.status(200).json({ _userInf, _userProduct });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+};
+
+/* Remove product from cart */
+
+export const removeProductCart = async (req, res) => {
+  try {
+    let _id = req.params.id;
+    let _idProduct = req.params.product;
+    let cartItems = [];
+    let cart = await Cart.findOne({ _idUser: _id }).then((res) => {
+      cartItems = res.cartItem;
+    });
+    cartItems = cartItems.filter((item) => {
+      if (item._idSp !== _idProduct) return item;
+    });
+    const updatedCart = await Cart.findOneAndUpdate(
+      { _idUser: _id },
+      { $set: { cartItem: cartItems } }
+    );
+    res.status(200).json(updatedCart);
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
